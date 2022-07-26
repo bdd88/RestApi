@@ -6,13 +6,13 @@ use Exception;
 /** Abstract for building custom endpoints. */
 abstract class EndpointAbstract
 {
-    protected DatabaseAbstract $database;
+    protected MySql $database;
     protected string $name;
     protected array $uriValues;
     protected string $requestMethod;
     protected mixed $query;
 
-    final public function __construct(DatabaseAbstract $database, Request $request)
+    final public function __construct(MySql $database, Request $request)
     {
         $this->database = $database;
         $this->endpointName = $request->endpointName;
