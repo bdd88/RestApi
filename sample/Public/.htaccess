@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Serve existing files and directories as normal.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Serve the API if the requested file or directory does not actually exist.
+RewriteRule ^(.+)$ api.php [L]
