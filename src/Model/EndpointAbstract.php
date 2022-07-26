@@ -3,7 +3,10 @@ namespace bdd88\RestApi\Model;
 
 use Exception;
 
-/** Abstract for building custom endpoints. */
+/**
+ * Defines the basic methods necessary to create custom endpoints.
+ * Extend this class and use the injected MySql object to create your endpoint CRUD operations.
+ */
 abstract class EndpointAbstract
 {
     protected MySql $database;

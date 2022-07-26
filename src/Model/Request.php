@@ -3,7 +3,7 @@ namespace bdd88\RestApi\Model;
 
 use Exception;
 
-/** Stores data provided by the user request. */
+/** Stores and parses data provided by the user request. */
 class Request
 {
     public string $uri;

@@ -5,6 +5,7 @@ use bdd88\RestApi\Model\ConfigDatabase;
 use bdd88\RestApi\Model\EndpointAbstract;
 use bdd88\RestApi\Model\MySql;
 use bdd88\RestApi\Model\Request;
+use Throwable;
 
 /** Primary controller that handles flow of data between the user, sub-controllers, and models. */
 class Main
@@ -13,12 +14,27 @@ class Main
     private Router $router;
     private Request $request;
     private ConfigDatabase $databaseConfig;
+    private bool $debugMode;
 
-    public function __construct()
+    public function __construct(string $databaseConfigPath, ?string $debugMode = NULL)
     {
+        $this->debugMode = $debugMode ?? FALSE;
+        set_exception_handler(array($this, 'exceptionHandler'));
         $this->databaseConfig = new ConfigDatabase($databaseConfigPath);
         $this->database = new MySql($this->databaseConfig);
         $this->request = new Request();
+        $this->router = new Router();
+    }
+
+    public function exceptionHandler(Throwable $exception): void
+    {
+        if ($this->debugMode) {
+            echo '<pre>';
+            echo $exception;
+            echo '</pre>';
+        } else {
+            echo 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.';
+        }
     }
 
     /** Create a mapping for endpoint name to class. */
