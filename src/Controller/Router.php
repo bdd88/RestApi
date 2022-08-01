@@ -1,5 +1,5 @@
 <?php
-namespace bdd88\RestApi\Controller;
+namespace Bdd88\RestApi\Controller;
 
 use Exception;
 

@@ -1,5 +1,5 @@
 <?php
-namespace bdd88\RestApi\Model;
+namespace Bdd88\RestApi\Model;
 
 /** Loads and validates the database configuration file. */
 class ConfigDatabase extends ConfigAbstract

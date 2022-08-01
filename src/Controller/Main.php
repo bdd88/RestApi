@@ -1,10 +1,10 @@
 <?php
-namespace bdd88\RestApi\Controller;
+namespace Bdd88\RestApi\Controller;
 
-use bdd88\RestApi\Model\ConfigDatabase;
-use bdd88\RestApi\Model\EndpointAbstract;
-use bdd88\RestApi\Model\MySql;
-use bdd88\RestApi\Model\Request;
+use Bdd88\RestApi\Model\ConfigDatabase;
+use Bdd88\RestApi\Model\EndpointAbstract;
+use Bdd88\RestApi\Model\MySql;
+use Bdd88\RestApi\Model\Request;
 use Throwable;
 
 /** Primary controller that handles flow of data between the user, sub-controllers, and models. */

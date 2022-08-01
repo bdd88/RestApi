@@ -1,5 +1,5 @@
 <?php
-namespace bdd88\RestApi\Model;
+namespace Bdd88\RestApi\Model;
 
 use Exception;
 
