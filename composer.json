@@ -1,0 +1,19 @@
+{
+    "name": "bdd88/restapi",
+    "description": "A RESTful JSON API library.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Bdd88\\RestApi\\": "src/"
+        }
+    },
+    "require": {
+        "bdd88/jsonwebtoken": "v1.0.*"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/bdd88/JsonWebToken.git"
+        }
+    ]
+}
