@@ -8,7 +8,7 @@
         }
     },
     "require": {
-        "bdd88/jsonwebtoken": "v1.0.*",
-        "bdd88/mysql": "v1.0.*"
+        "bdd88/jsonwebtoken": "dev-main",
+        "bdd88/mysql": "dev-main"
     }
 }
