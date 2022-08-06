@@ -12,10 +12,13 @@ class Request
     public string $endpointName;
     public array $endpointValues;
 
+    public string $token;
+
     public function __construct()
     {
         $this->uri = $_SERVER['REQUEST_URI'];
         $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->authorization = $_SERVER['Authorization'];
         $this->payload = file_get_contents("php://input");
         $this->parse();
     }
@@ -23,15 +26,23 @@ class Request
     /** Parse a URI request string. */
     private function parse(): void
     {
+        // Retrieve the bearer token for authorization.
+        $this->token = str_replace('Bearer ', '', $this->authorization, 1);
+
+        // Parse the URI and remove the script name from the request path.
         $requestArray = parse_url($this->uri);
         $requestPath = array_values(array_diff(
             explode('/', $requestArray['path']),
             explode('/', $_SERVER['SCRIPT_NAME'])
         ));
+
+        // Validate the request path.
         $requestEntries = sizeof($requestPath);
         if ($requestEntries % 2 !== 0) {
             throw new Exception('Improperly formatted URI: Missing endpoint name or value.');
         }
+
+        // Create a map of endpoint name/value pairs.
         for ($i = 0; $i < $requestEntries; $i++) {
             $entry = $requestPath[$i];
             if ($entry !== '') {
@@ -39,6 +50,8 @@ class Request
                 $i++;
             }
         }
+
+        // Set the endpoint name.
         $this->endpointName = implode('/', array_keys($this->endpointValues));
     }
 
