@@ -8,13 +8,13 @@ class ConfigDatabase extends ConfigAbstract
     protected function validate(): void
     {
         $this->verifySettingsAreSet(array(
-            'host',
+            'hostname',
             'database',
             'username',
             'password'
         ));
         $this->verifySettingsType('string', array(
-            'host',
+            'hostname',
             'database',
             'username',
             'password'
