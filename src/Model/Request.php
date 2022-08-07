@@ -18,7 +18,7 @@ class Request
     {
         $this->uri = $_SERVER['REQUEST_URI'];
         $this->method = $_SERVER['REQUEST_METHOD'];
-        $this->authorization = $_SERVER['Authorization'];
+        $this->authorization = $_SERVER['HTTP_AUTHORIZATION'];
         $this->payload = file_get_contents("php://input");
         $this->parse();
     }
@@ -27,7 +27,11 @@ class Request
     private function parse(): void
     {
         // Retrieve the bearer token for authorization.
-        $this->token = str_replace('Bearer ', '', $this->authorization, 1);
+        list($authScheme, $authParameter) = explode(' ', $this->authorization);
+        if ($authScheme !== 'Bearer') {
+            throw new Exception('Wrong HTTP authorization scheme (or improperly formatted)');
+        }
+        $this->token = $authParameter;
 
         // Parse the URI and remove the script name from the request path.
         $requestArray = parse_url($this->uri);
