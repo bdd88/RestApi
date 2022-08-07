@@ -3,8 +3,8 @@ namespace Bdd88\RestApi\Controller;
 
 use Bdd88\RestApi\Model\ConfigDatabase;
 use Bdd88\RestApi\Model\EndpointAbstract;
-use Bdd88\RestApi\Model\MySql;
 use Bdd88\RestApi\Model\Request;
+use Bdd88\MySql\MySql;
 use Throwable;
 
 /** Primary controller that handles flow of data between the user, sub-controllers, and models. */
@@ -21,7 +21,7 @@ class Main
         $this->debugMode = $debugMode ?? FALSE;
         set_exception_handler(array($this, 'exceptionHandler'));
         $this->databaseConfig = new ConfigDatabase($databaseConfigPath);
-        $this->database = new MySql($this->databaseConfig);
+        $this->database = new MySql(...$this->databaseConfig->getAllSettings());
         $this->request = new Request();
         $this->router = new Router();
     }
