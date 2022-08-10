@@ -1,7 +1,6 @@
 <?php
 namespace Bdd88\RestApi\Model;
 
-use Bdd88\MySql\MySql;
 use Exception;
 
 /**
