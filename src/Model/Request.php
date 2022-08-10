@@ -12,7 +12,7 @@ class Request
     public string $endpointName;
     public array $endpointValues;
 
-    public string $token;
+    public string $tokenString;
 
     public function __construct()
     {
@@ -31,7 +31,7 @@ class Request
         if ($authScheme !== 'Bearer') {
             throw new Exception('Wrong HTTP authorization scheme (or improperly formatted)');
         }
-        $this->token = $authParameter;
+        $this->tokenString = $authParameter;
 
         // Parse the URI and remove the script name from the request path.
         $requestArray = parse_url($this->uri);
