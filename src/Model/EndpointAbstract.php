@@ -24,6 +24,11 @@ abstract class EndpointAbstract
         $this->query = json_decode($request->payload);
     }
 
+    public function __toString(): string
+    {
+        return $this->serve();
+    }
+
     /**
      * Create a new record.
      * @return string JSON formatted string containing HTTP Status code and creation success status.
@@ -55,14 +60,16 @@ abstract class EndpointAbstract
     protected abstract function delete(): string;
 
     /** Execute the correct class method based on the HTTP request method. */
-    final public function serve(): void
+    final public function serve(): string
     {
-        $crudMethods = array('POST' => 'create', 'GET' => 'read', 'PUT' => 'replace', 'PATCH' => 'update', 'DELETE' => 'delete');
-        $action = $crudMethods[$this->requestMethod] ?? NULL;
-        if (is_null($action)) {
-            throw new Exception('Unsupported HTTP request method.');
-        } else {
-            $this->$action();
-        }
+        $crudMethods = array(
+            'POST' => 'create',
+            'GET' => 'read',
+            'PUT' => 'replace',
+            'PATCH' => 'update',
+            'DELETE' => 'delete'
+        );
+        $action = $crudMethods[$this->requestMethod];
+        return $this->$action();
     }
 }
