@@ -3,12 +3,14 @@ namespace Bdd88\RestApi\Controller;
 
 use Bdd88\ServiceContainer\ServiceContainer;
 use Bdd88\RestApi\Model\EndpointAbstract;
+use Bdd88\RestApi\Model\HttpResponseCode;
 use Throwable;
 
 /** Primary controller that handles flow of data between the user, sub-controllers, and models. */
 class Main
 {
     private ServiceContainer $serviceContainer;
+    private Router $router;
     private bool $debugMode;
 
     /**
@@ -19,11 +21,15 @@ class Main
      */
     public function __construct(string $databaseConfigPath, string $publicKey, ?string $privateKey = NULL, ?string $debugMode = NULL)
     {
+        // Setup debug mode error handling.
         $this->debugMode = $debugMode ?? FALSE;
         set_exception_handler(array($this, 'exceptionHandler'));
+
+        // Use the service container to setup, inject, and configure class instances.
         $this->serviceContainer = new ServiceContainer();
         $this->serviceContainer->create('\Bdd88\RestApi\Model\ConfigDatabase', [$databaseConfigPath]);
-        $this->serviceContainer->create('\Bdd88\RestApi\Controller\Router');
+        $this->serviceContainer->create('\Bdd88\JsonWebToken\JwtFactory', [$publicKey, $privateKey]);
+        $this->router = $this->serviceContainer->create('\Bdd88\RestApi\Controller\Router');
     }
 
     public function exceptionHandler(Throwable $exception): void
@@ -33,7 +39,10 @@ class Main
             echo $exception;
             echo '</pre>';
         } else {
-            echo 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.';
+            /** @var HttpResponseCode $httpResponseCode */
+            $httpResponseCode = $this->serviceContainer->create('\Bdd88\RestApi\Model\HttpResponseCode');
+            $httpResponseCode->set(500, 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.');
+            echo $httpResponseCode->__toString();
         }
     }
 
@@ -46,11 +55,15 @@ class Main
     /** Process the requested URI, and serve the appropriate endpoint. */
     public function exec()
     {
-        /** @var Router $router */
-        $router = $this->serviceContainer->get('\Bdd88\RestApi\Controller\Router');
-        /** @var EndpointAbstract $endpoint */
-        $endpoint = $this->serviceContainer->create($router->route());
-        echo $endpoint->serve();
+        $destination = $this->router->route();
+        if ($destination === FALSE) {
+            /** @var HttpResponseCode $output */
+            $output = $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode');
+        } else {
+            /** @var EndpointAbstract $output */
+            $output = $this->serviceContainer->create($destination);
+        }
+        echo $output->__toString();
     }
 
 }
