@@ -43,29 +43,19 @@ class Router
      */
     public function route(): string|FALSE
     {
-        // Malformed URI request.
+        $loginStatus = $this->login->verify();
         if ($this->request->endpointName === FALSE) {
-            $this->HttpResponseCode->set(400);
-        }
-        // No token provided.
-        if ($this->login->loggedIn === NULL) {
-            $this->HttpResponseCode->set(401);
-        }
-        // Token is invalid.
-        if ($this->login->loggedIn === FALSE) {
-            $this->HttpResponseCode->set(403);
-        }
-        // Endpoint doesn't exist.
-        if (!isset($this->endpoints[$this->request->endpointName])) {
-            $this->HttpResponseCode->set(404);
-        }
-        // HTTP Method isn't allowed.
-        if (!isset(SELF::ALLOWED_METHODS[$this->requestMethod])) {
-            $this->HttpResponseCode->set(405);
-        }
-        // Accept header isn't set to JSON.
-        if ($this->request->accept !== 'application/json') {
-            $this->HttpResponseCode->set(406);
+            $this->HttpResponseCode->set(400, 'Malformed URI request.');
+        } elseif ($loginStatus === NULL) {
+            $this->HttpResponseCode->set(401, 'No token provided.');
+        } elseif (is_string($loginStatus)) {
+            $this->HttpResponseCode->set(403, $loginStatus);
+        } elseif (!isset($this->endpoints[$this->request->endpointName])) {
+            $this->HttpResponseCode->set(404, 'Endpoint doesn\'t exist.');
+        } elseif (!isset(SELF::ALLOWED_METHODS[$this->requestMethod])) {
+            $this->HttpResponseCode->set(405, 'HTTP Method isn\'t allowed.');
+        } elseif ($this->request->accept !== 'application/json') {
+            $this->HttpResponseCode->set(406, 'Accept header isn\'t set to application/json.');
         }
 
         if ($this->HttpResponseCode->isSet()) {
