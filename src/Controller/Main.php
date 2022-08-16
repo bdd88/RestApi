@@ -11,7 +11,7 @@ use Throwable;
 class Main
 {
     private ServiceContainer $serviceContainer;
-    private Router $router;
+    private array $endpointMap;
     private bool $debugMode;
 
     /**
@@ -30,7 +30,6 @@ class Main
         $this->serviceContainer = new ServiceContainer();
         $this->serviceContainer->create('\Bdd88\RestApi\Model\ConfigDatabase', [$databaseConfigPath]);
         $this->serviceContainer->create('\Bdd88\JsonWebToken\JwtFactory', [$publicKey, $privateKey]);
-        $this->router = $this->serviceContainer->create('\Bdd88\RestApi\Controller\Router');
     }
 
     public function exceptionHandler(Throwable $exception): void
@@ -52,14 +51,16 @@ class Main
     /** Create a mapping for endpoint name to class. */
     public function createEndpoint(string $endpointName, string $endpointClass): void
     {
-        $this->router->createEndpoint($endpointName, $endpointClass);
+        $this->endpointMap[$endpointName] = $endpointClass;
     }
 
     /** Process the requested URI, and serve the appropriate endpoint. */
     public function exec(): void
     {
-        header("Content-Type: application/json");
-        $destination = $this->router->route();
+        // Use the router to find the correct endpoint class.
+        /** @var Router $router */
+        $router = $this->serviceContainer->create('\Bdd88\RestApi\Controller\Router');
+        $destination = $router->route($this->endpointMap);
 
         if ($destination === FALSE) {
             /** @var HttpResponseCode $httpResponseCodeDetails */

@@ -41,7 +41,7 @@ class Router
      * 
      * @return string|FALSE The class name of the proper endpoint. FALSE if the request can't be routed to an endpoint properly.
      */
-    public function route(): string|FALSE
+    public function route(array $endpointMap): string|FALSE
     {
         $loginStatus = $this->login->verify();
         if ($this->request->endpointName === FALSE) {
@@ -50,7 +50,7 @@ class Router
             $this->HttpResponseCode->set(401, 'No token provided.');
         } elseif (is_string($loginStatus)) {
             $this->HttpResponseCode->set(403, $loginStatus);
-        } elseif (!isset($this->endpoints[$this->request->endpointName])) {
+        } elseif (!isset($endpointMap[$this->request->endpointName])) {
             $this->HttpResponseCode->set(404, 'Endpoint doesn\'t exist.');
         } elseif (!isset(SELF::ALLOWED_METHODS[$this->requestMethod])) {
             $this->HttpResponseCode->set(405, 'HTTP Method isn\'t allowed.');
@@ -62,7 +62,7 @@ class Router
             return FALSE;
         }
         $this->HttpResponseCode->set(200);
-        return $this->endpoints[$this->request->endpointName];
+        return $endpointMap[$this->request->endpointName];
     }
 
 }
