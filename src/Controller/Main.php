@@ -42,6 +42,7 @@ class Main
             /** @var HttpResponseCode $httpResponseCode */
             $httpResponseCode = $this->serviceContainer->create('\Bdd88\RestApi\Model\HttpResponseCode');
             $httpResponseCode->set(500, 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.');
+            header("Content-Type: application/json");
             echo $httpResponseCode->__toString();
         }
     }
@@ -63,6 +64,7 @@ class Main
             /** @var EndpointAbstract $output */
             $output = $this->serviceContainer->create($destination);
         }
+        header("Content-Type: application/json");
         echo $output->__toString();
     }
 
