@@ -9,7 +9,6 @@
     },
     "require": {
         "bdd88/jsonwebtoken": "dev-main",
-        "bdd88/mysql": "dev-main",
         "bdd88/servicecontainer": "dev-main"
     }
 }

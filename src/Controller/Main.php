@@ -4,48 +4,35 @@ namespace Bdd88\RestApi\Controller;
 use Bdd88\ServiceContainer\ServiceContainer;
 use Bdd88\RestApi\Model\EndpointAbstract;
 use Bdd88\RestApi\Model\HttpResponseCode;
-use Bdd88\RestApi\Model\Request;
-use Throwable;
 
 /** Primary controller that handles flow of data between the user, sub-controllers, and models. */
 class Main
 {
     private ServiceContainer $serviceContainer;
     private array $endpointMap;
-    private bool $debugMode;
+    
 
-    /**
-     * @param string $databaseConfigPath Path to ini file containing database credentials.
-     * @param string $publicKey PEM formatted Public Key for RSA, and Shared Secret for HMAC.
-     * @param string|null $privateKey (optional) PEM formatted RSA private key to use for signing tokens.
-     * @param string|null $debugMode (optional) TRUE will display errors/exceptions as they occur to the end user. FALSE will hide errors behind a generic message.
-     */
-    public function __construct(string $databaseConfigPath, string $publicKey, ?string $privateKey = NULL, ?string $debugMode = NULL)
+    public function __construct(?string $publicKey = NULL, ?string $privateKey = NULL, private ?bool $debugMode = NULL)
     {
-        // Setup debug mode error handling.
-        $this->debugMode = $debugMode ?? FALSE;
         set_exception_handler(array($this, 'exceptionHandler'));
-
-        // Use the service container to setup, inject, and configure class instances.
         $this->serviceContainer = new ServiceContainer();
-        $this->serviceContainer->create('\Bdd88\RestApi\Model\ConfigDatabase', [$databaseConfigPath]);
         $this->serviceContainer->create('\Bdd88\JsonWebToken\JwtFactory', [$publicKey, $privateKey]);
+        header('Content-Type: application/json');
     }
 
-    public function exceptionHandler(Throwable $exception): void
+    // Catch all exception handler that hides specific error details from the client unless debug mode is enabled.
+    public function exceptionHandler(\Throwable $exception): void
     {
-        if ($this->debugMode) {
-            echo '<pre>';
+        if ($this->debugMode === TRUE) {
+            header('Content-Type: text/plain');
             echo $exception;
-            echo '</pre>';
         } else {
             /** @var HttpResponseCode $httpResponseCode */
             $httpResponseCode = $this->serviceContainer->create('\Bdd88\RestApi\Model\HttpResponseCode');
             $httpResponseCode->set(500, 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.');
-            header("Content-Type: application/json");
-            echo $httpResponseCode->__toString();
-            exit;
+            echo $httpResponseCode;
         }
+        exit;
     }
 
     /** Create a mapping for endpoint name to class. */
@@ -62,22 +49,20 @@ class Main
         $router = $this->serviceContainer->create('\Bdd88\RestApi\Controller\Router');
         $destination = $router->route($this->endpointMap);
 
+        // If there was an error routing then display the HTTP Response Code and related details.
         if ($destination === FALSE) {
-            /** @var HttpResponseCode $httpResponseCodeDetails */
-            $httpResponseCodeDetails = $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode');
-            echo $httpResponseCodeDetails->__toString();
+            echo $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode');
             return;
         }
 
-        // Instiate and automatically inject dependencies for the users Endpoint class.
+        // Instiate and automatically inject dependencies for the users Endpoint class. Manually inject Request and HttpResponseCode dependencies.
         /** @var EndpointAbstract $endpoint */
         $endpoint = $this->serviceContainer->create($destination);
-        // Manually inject Request and HttpResponse code.
         $endpoint->injectDependencies(
             $this->serviceContainer->get('\Bdd88\RestApi\Model\Request'),
             $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode')
         );
-        echo $endpoint->__toString();
+        echo $endpoint;
     }
 
 }
