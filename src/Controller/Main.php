@@ -4,6 +4,7 @@ namespace Bdd88\RestApi\Controller;
 use Bdd88\ServiceContainer\ServiceContainer;
 use Bdd88\RestApi\Model\EndpointAbstract;
 use Bdd88\RestApi\Model\HttpResponseCode;
+use Bdd88\RestApi\Model\Request;
 use Throwable;
 
 /** Primary controller that handles flow of data between the user, sub-controllers, and models. */
@@ -44,6 +45,7 @@ class Main
             $httpResponseCode->set(500, 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.');
             header("Content-Type: application/json");
             echo $httpResponseCode->__toString();
+            exit;
         }
     }
 
@@ -54,18 +56,27 @@ class Main
     }
 
     /** Process the requested URI, and serve the appropriate endpoint. */
-    public function exec()
+    public function exec(): void
     {
-        $destination = $this->router->route();
-        if ($destination === FALSE) {
-            /** @var HttpResponseCode $output */
-            $output = $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode');
-        } else {
-            /** @var EndpointAbstract $output */
-            $output = $this->serviceContainer->create($destination);
-        }
         header("Content-Type: application/json");
-        echo $output->__toString();
+        $destination = $this->router->route();
+
+        if ($destination === FALSE) {
+            /** @var HttpResponseCode $httpResponseCodeDetails */
+            $httpResponseCodeDetails = $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode');
+            echo $httpResponseCodeDetails->__toString();
+            return;
+        }
+
+        // Instiate and automatically inject dependencies for the users Endpoint class.
+        /** @var EndpointAbstract $endpoint */
+        $endpoint = $this->serviceContainer->create($destination);
+        // Manually inject Request and HttpResponse code.
+        $endpoint->injectDependencies(
+            $this->serviceContainer->get('\Bdd88\RestApi\Model\Request'),
+            $this->serviceContainer->get('\Bdd88\RestApi\Model\HttpResponseCode')
+        );
+        echo $endpoint->__toString();
     }
 
 }
