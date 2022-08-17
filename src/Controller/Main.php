@@ -1,6 +1,7 @@
 <?php
 namespace Bdd88\RestApi\Controller;
 
+use Bdd88\JsonWebToken\JwtFactory;
 use Bdd88\ServiceContainer\ServiceContainer;
 use Bdd88\RestApi\Model\EndpointAbstract;
 use Bdd88\RestApi\Model\HttpResponseCode;
@@ -33,6 +34,14 @@ class Main
             echo $httpResponseCode;
         }
         exit;
+    }
+
+    public function createToken(array $header, array $payload): string
+    {
+        /** @var JwtFactory $jwtFactory */
+        $jwtFactory = $this->serviceContainer->get('\Bdd88\JsonWebToken\JwtFactory');
+        $token = $jwtFactory->generate($header, $payload);
+        return $token;
     }
 
     /** Create a mapping for endpoint name to class. */
