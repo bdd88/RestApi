@@ -12,27 +12,29 @@ class Main
     private ServiceContainer $serviceContainer;
     private array $endpointMap;
     
-
     public function __construct(?string $publicKey = NULL, ?string $privateKey = NULL, private ?bool $debugMode = NULL)
     {
         set_exception_handler(array($this, 'exceptionHandler'));
+        set_error_handler(array($this, 'errorHandler'), E_WARNING);
         $this->serviceContainer = new ServiceContainer();
         $this->serviceContainer->create('\Bdd88\JsonWebToken\JwtFactory', [$publicKey, $privateKey]);
         header('Content-Type: application/json');
     }
 
-    // Catch all exception handler that hides specific error details from the client unless debug mode is enabled.
+    /** Catch all error handler that converts errors into exceptions. */
+    public function errorHandler(int $number, string $description, string $file, int $line)
+    {
+        throw new \Exception($description);
+    }
+
+    /** Catch all exception handler that hides specific error details from the client unless debug mode is enabled. */
     public function exceptionHandler(\Throwable $exception): void
     {
-        if ($this->debugMode === TRUE) {
-            header('Content-Type: text/plain');
-            echo $exception;
-        } else {
-            /** @var HttpResponseCode $httpResponseCode */
-            $httpResponseCode = $this->serviceContainer->create('\Bdd88\RestApi\Model\HttpResponseCode');
-            $httpResponseCode->set(500, 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.');
-            echo $httpResponseCode;
-        }
+        /** @var HttpResponseCode $httpResponseCode */
+        $httpResponseCode = $this->serviceContainer->create('\Bdd88\RestApi\Model\HttpResponseCode');
+        $message = ($this->debugMode === TRUE)? explode(PHP_EOL, $exception): 'Oops! We ran into an error. Please try again in a few minutes, and contact the site administrator if the error persists.';
+        $httpResponseCode->set(500, $message);
+        echo $httpResponseCode;
         exit;
     }
 
