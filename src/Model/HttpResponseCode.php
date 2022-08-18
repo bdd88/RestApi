@@ -48,28 +48,28 @@ class HttpResponseCode
         '505' => 'HTTP Version Not Supported'
     );
     private int $statusCode;
-    private string $details;
+    private mixed $details;
 
     /** JSON encoded string containing the code number, description, and any additional details. */
     public function __toString(): string
     {
         $output = array(
             'code' => $this->statusCode,
-            'description' => SELF::STATUS_CODES[$this->statusCode]
+            'description' => SELF::STATUS_CODES[$this->statusCode],
+            'details' => $this->details
         );
-        if (isset($this->details)) {
-            $output['details'] = $this->details;
-        }
         return json_encode($output);
     }
 
-    public function set(int $code, ?string $details = NULL): void
+    /** Set the HTTP Response code and additional details */
+    public function set(int $code, mixed $details = NULL): void
     {
         http_response_code($code);
         $this->statusCode = $code;
         $this->details = $details;
     }
 
+    /** Retrieve the currently set http response status code. */
     public function get(): int
     {
         return $this->statusCode;

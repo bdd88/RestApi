@@ -9,11 +9,11 @@ use Exception;
 class Router
 {
     private const ALLOWED_METHODS = array(
-        'POST',
-        'GET',
-        'PUT',
-        'PATCH',
-        'DELETE'
+        'POST' => 'POST',
+        'GET' => 'GET',
+        'PUT' => 'PUT',
+        'PATCH' => 'PATCH',
+        'DELETE' => 'DELETE'
     );
 
     public function __construct(
@@ -44,8 +44,8 @@ class Router
         } elseif (!isset($endpointMap[$this->request->endpointName])) {
             $this->HttpResponseCode->set(404, 'Endpoint doesn\'t exist.');
 
-        } elseif (!isset(SELF::ALLOWED_METHODS[$this->requestMethod])) {
-            $this->HttpResponseCode->set(405, 'HTTP Method isn\'t allowed.');
+        } elseif (!isset(SELF::ALLOWED_METHODS[$this->request->method])) {
+            $this->HttpResponseCode->set(405, 'HTTP Method isn\'t allowed: ' . htmlspecialchars($this->request->method));
 
         } elseif ($this->request->accept !== 'application/json') {
             $this->HttpResponseCode->set(406, 'Accept header isn\'t set to application/json.');

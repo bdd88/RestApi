@@ -42,7 +42,7 @@ abstract class EndpointAbstract
             'PATCH' => 'update',
             'DELETE' => 'delete'
         );
-        $action = $crudMethods[$this->requestMethod];
+        $action = $crudMethods[$this->request->method];
         return $this->$action();
     }
 }
